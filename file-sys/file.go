@@ -13,3 +13,13 @@ type FileOp struct {
 	curDate      time.Time
 	path         string
 }
+
+// CreateFileOp 只是创建一个文件操作对象，但不代表要立即操作这个文件，所以 isOpen 默认为 false
+func CreateFileOp(path string, maxSize int, needCompress bool) *FileOp {
+	return &FileOp{
+		path:         path,
+		needCompress: needCompress,
+		isOpen:       false,
+		maxSize:      maxSize,
+	}
+}
