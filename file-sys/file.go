@@ -23,3 +23,23 @@ func CreateFileOp(path string, maxSize int, needCompress bool) *FileOp {
 		maxSize:      maxSize,
 	}
 }
+
+// ready 用于进行文件操作前的准备工作
+func (fo *FileOp) ready() (err error) {
+	if fo.file == nil {
+		if IsExists(fo.path) {
+			fo.file, err = MustOpenFile(fo.path)
+			if err != nil {
+				return err
+			}
+		} else {
+			fo.file, err = CreateFile(fo.path)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	fo.isOpen = true
+	fo.curDate = time.Now()
+	return nil
+}
