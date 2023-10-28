@@ -2,6 +2,7 @@ package file_sys
 
 import (
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -30,7 +31,7 @@ func CreateFileOp(path, fileName string, maxSize int, needCompress bool) *FileOp
 func (fo *FileOp) ready() (err error) {
 	if fo.file == nil {
 		if IsExists(fo.path) {
-			fo.file, err = MustOpenFile(fo.path)
+			fo.file, err = MustOpenFile(fo.path, fo.fileName)
 			if err != nil {
 				return err
 			}
@@ -92,8 +93,8 @@ func (fo *FileOp) Write(context []byte) error {
 		}
 
 		// 重命名文件
-		src := fo.path + "/" + fo.fileName
-		dst := fo.path + "/" + fo.fileName + "_" + fo.curDate.Format("2006-01-02_15:04:05")
+		src := filepath.Join(fo.path, fo.fileName)
+		dst := filepath.Join(fo.path, fo.fileName+"_"+fo.curDate.Format("2006-01-02_15:04:05"))
 		err = os.Rename(src, dst)
 		if err != nil {
 			return err

@@ -18,8 +18,9 @@ func IsExists(path string) bool {
 }
 
 // MustOpenFile 直接打开文件，使用该方法的前提是确定文件一定存在
-func MustOpenFile(path string) (*os.File, error) {
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_RDWR, 0666)
+func MustOpenFile(path, fileName string) (*os.File, error) {
+	dst := filepath.Join(path, fileName)
+	file, err := os.OpenFile(dst, os.O_APPEND|os.O_RDWR, 0666)
 	return file, err
 }
 
