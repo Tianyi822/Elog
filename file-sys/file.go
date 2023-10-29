@@ -3,6 +3,7 @@ package file_sys
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -12,15 +13,17 @@ type FileOp struct {
 	needCompress bool // 是否需要压缩
 	maxSize      int  // 以 MB 为单位
 	curDate      time.Time
-	path         string // 文件保存路径
+	dirPath      string // 文件保存路径
 	fileName     string // 文件保存名称
+	realPath     string // 文件真实路径
 }
 
 // CreateFileOp 只是创建一个文件操作对象，但不代表要立即操作这个文件，所以 isOpen 默认为 false
 func CreateFileOp(path, fileName string, maxSize int, needCompress bool) *FileOp {
 	return &FileOp{
-		path:         path,
+		dirPath:      path,
 		fileName:     fileName,
+		realPath:     filepath.Join(path, fileName),
 		needCompress: needCompress,
 		isOpen:       false,
 		maxSize:      maxSize,
@@ -30,13 +33,13 @@ func CreateFileOp(path, fileName string, maxSize int, needCompress bool) *FileOp
 // ready 用于进行文件操作前的准备工作
 func (fo *FileOp) ready() (err error) {
 	if fo.file == nil {
-		if IsExists(fo.path) {
-			fo.file, err = MustOpenFile(fo.path, fo.fileName)
+		if IsExist(fo.realPath) {
+			fo.file, err = MustOpenFile(fo.realPath)
 			if err != nil {
 				return err
 			}
 		} else {
-			fo.file, err = CreateFile(fo.path, fo.fileName)
+			fo.file, err = CreateFile(fo.dirPath, fo.fileName)
 			if err != nil {
 				return err
 			}
@@ -87,22 +90,22 @@ func (fo *FileOp) Write(context []byte) error {
 	// 判断是否需要进行分片
 	if fo.needSplit() {
 		// 关闭文件
-		err := fo.file.Close()
-		if err != nil {
-			return err
-		}
-
-		// 重命名文件
-		src := filepath.Join(fo.path, fo.fileName)
-		dst := filepath.Join(fo.path, fo.fileName+"_"+fo.curDate.Format("2006-01-02_15:04:05"))
-		err = os.Rename(src, dst)
+		err := fo.Close()
 		if err != nil {
 			return err
 		}
 
 		// 压缩文件
 		if fo.needCompress {
-			err = Compress(dst, dst+".zip")
+			// 获取文件名和后缀
+			fInfo := strings.Split(fo.fileName, ".")
+			dst := filepath.Join(fo.dirPath, fInfo[0]+"_"+fo.curDate.Format("2006-01-02_15:04:05")+"."+fInfo[1])
+			err = Compress(dst+".zip", dst)
+			if err != nil {
+				return err
+			}
+			// 压缩之后删除原来的文件
+			err := Remove(dst)
 			if err != nil {
 				return err
 			}

@@ -2,7 +2,6 @@ package file_sys
 
 import (
 	"archive/zip"
-	"errors"
 	"io"
 	"io/fs"
 	"os"
@@ -11,22 +10,21 @@ import (
 	"strings"
 )
 
-// IsExists 判断路径是否存在
-func IsExists(path string) bool {
+// IsExist 判断路径是否存在
+func IsExist(path string) bool {
 	_, err := os.Stat(path)
-	return !errors.Is(err, fs.ErrNotExist)
+	return !os.IsNotExist(err)
 }
 
 // MustOpenFile 直接打开文件，使用该方法的前提是确定文件一定存在
-func MustOpenFile(path, fileName string) (*os.File, error) {
-	dst := filepath.Join(path, fileName)
-	file, err := os.OpenFile(dst, os.O_APPEND|os.O_RDWR, 0666)
+func MustOpenFile(realPath string) (*os.File, error) {
+	file, err := os.OpenFile(realPath, os.O_APPEND|os.O_RDWR, 0666)
 	return file, err
 }
 
 // CreateFile 创建文件，先检查文件是否存在，存在就报错，不存在就创建
 func CreateFile(path, fileName string) (*os.File, error) {
-	exist := IsExists(path)
+	exist := IsExist(path)
 	if !exist {
 		err := os.MkdirAll(path, os.ModePerm)
 		if err != nil {
@@ -35,18 +33,16 @@ func CreateFile(path, fileName string) (*os.File, error) {
 	}
 
 	// 文件路径
-	path = path + "/" + fileName
-	exist = IsExists(path)
-	if exist {
-		return nil, errors.New("文件已存在")
-	} else {
-		_, err := os.Create(path)
+	realPath := filepath.Join(path, fileName)
+	exist = IsExist(realPath)
+	if !exist {
+		_, err := os.Create(realPath)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	file, err := os.OpenFile(realPath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		return nil, err
 	}
