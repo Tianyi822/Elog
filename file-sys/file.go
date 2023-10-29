@@ -1,6 +1,7 @@
 package file_sys
 
 import (
+	"bufio"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,6 +10,7 @@ import (
 
 type FileOp struct {
 	file         *os.File
+	writer       *bufio.Writer
 	isOpen       bool   // 用于判断是否可以进行操作
 	needCompress bool   // 是否需要压缩
 	maxSize      int    // 以 MB 为单位
@@ -43,6 +45,7 @@ func (fo *FileOp) ready() (err error) {
 				return err
 			}
 		}
+		fo.writer = bufio.NewWriter(fo.file)
 	}
 	fo.isOpen = true
 	return nil
@@ -53,6 +56,7 @@ func (fo *FileOp) Close() error {
 	fo.isOpen = false
 	err := fo.file.Close()
 	fo.file = nil
+	fo.writer = nil
 	return err
 }
 
@@ -113,6 +117,6 @@ func (fo *FileOp) Write(context []byte) error {
 
 	// 写入数据
 	buf := append(context, '\n')
-	_, err := fo.file.Write(buf)
+	_, err := fo.writer.Write(buf)
 	return err
 }
