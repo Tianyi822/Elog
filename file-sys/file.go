@@ -9,10 +9,9 @@ import (
 
 type FileOp struct {
 	file         *os.File
-	isOpen       bool // 用于判断是否可以进行操作
-	needCompress bool // 是否需要压缩
-	maxSize      int  // 以 MB 为单位
-	curDate      time.Time
+	isOpen       bool   // 用于判断是否可以进行操作
+	needCompress bool   // 是否需要压缩
+	maxSize      int    // 以 MB 为单位
 	dirPath      string // 文件保存路径
 	fileName     string // 文件保存名称
 	realPath     string // 文件真实路径
@@ -46,7 +45,6 @@ func (fo *FileOp) ready() (err error) {
 		}
 	}
 	fo.isOpen = true
-	fo.curDate = time.Now()
 	return nil
 }
 
@@ -63,11 +61,6 @@ func (fo *FileOp) needSplit() bool {
 	// 判断是否需要进行分片
 	if fo.maxSize <= 0 {
 		return false
-	}
-
-	// 判断是否需要进行分片
-	if fo.curDate.Day() != time.Now().Day() {
-		return true
 	}
 
 	// 判断文件大小是否超过最大值
@@ -99,7 +92,7 @@ func (fo *FileOp) Write(context []byte) error {
 		if fo.needCompress {
 			// 获取文件名和后缀
 			fInfo := strings.Split(fo.fileName, ".")
-			dst := filepath.Join(fo.dirPath, fInfo[0]+"_"+fo.curDate.Format("2006-01-02_15:04:05")+"."+fInfo[1])
+			dst := filepath.Join(fo.dirPath, fInfo[0]+"_"+time.Now().Format("2006-01-02_15:04:05")+"."+fInfo[1])
 			err = Compress(dst+".zip", dst)
 			if err != nil {
 				return err
