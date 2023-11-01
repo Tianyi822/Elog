@@ -54,9 +54,8 @@ func Remove(path string) error {
 	return os.RemoveAll(path)
 }
 
-// CompressToTarGz 打包压缩成 .tar.gz 文件
-func CompressToTarGz(src string) error {
-
+// CompressFileToTarGz 将文件打包压缩成 .tar.gz 文件
+func CompressFileToTarGz(src string) error {
 	dir := filepath.Dir(src)
 	filePrefixName := strings.Split(filepath.Base(src), ".")[0]
 	dst := filepath.Join(dir, filePrefixName+".tar.gz")
@@ -91,50 +90,43 @@ func CompressToTarGz(src string) error {
 		}
 	}(tw)
 
-	// 遍历源目录并将文件添加到Tar包中
-	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+	// 打开源文件
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer func(srcFile *os.File) {
+		err := srcFile.Close()
 		if err != nil {
-			return err
+			panic(err)
 		}
+	}(srcFile)
 
-		// 构建文件头信息
-		header, err := tar.FileInfoHeader(info, info.Name())
-		if err != nil {
-			return err
-		}
+	// 获取源文件的信息
+	srcFileInfo, err := srcFile.Stat()
+	if err != nil {
+		return err
+	}
 
-		// 更新文件头中的路径信息
-		relPath, err := filepath.Rel(src, path)
-		if err != nil {
-			return err
-		}
-		header.Name = relPath
+	// 构建文件头信息
+	header, err := tar.FileInfoHeader(srcFileInfo, "")
+	if err != nil {
+		return err
+	}
 
-		// 写入文件头
-		if err := tw.WriteHeader(header); err != nil {
-			return err
-		}
+	// 更新文件头中的路径信息
+	header.Name = filepath.Base(src)
 
-		// 如果不是目录，将文件内容写入Tar包
-		if !info.IsDir() {
-			file, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer func(file *os.File) {
-				err := file.Close()
-				if err != nil {
-					panic(err)
-				}
-			}(file)
+	// 写入文件头
+	if err := tw.WriteHeader(header); err != nil {
+		return err
+	}
 
-			// 将文件内容复制到Tar包中
-			_, err = io.Copy(tw, file)
-			if err != nil {
-				return err
-			}
-		}
+	// 将源文件内容复制到Tar包中
+	_, err = io.Copy(tw, srcFile)
+	if err != nil {
+		return err
+	}
 
-		return nil
-	})
+	return nil
 }
