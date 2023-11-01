@@ -1,13 +1,14 @@
 package file_sys
 
 import (
-	"archive/zip"
+	"archive/tar"
+	"compress/gzip"
 	"io"
-	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // IsExist 判断路径是否存在
@@ -55,138 +56,87 @@ func Remove(path string) error {
 	return os.RemoveAll(path)
 }
 
-// Compress
-// @param filePath 需要压缩文件或者目录的路径
-// @param dest 压缩目标文件
-// @description 压缩文件
-func Compress(pkgPath string, paths ...string) error {
-	// 获取上级目录路径
-	preDir := filepath.Dir(pkgPath)
-	if err := os.MkdirAll(preDir, os.ModePerm); err != nil {
-		return err
-	}
+// CompressToTarGz 打包压缩成 .tar.gz 文件
+func CompressToTarGz(src string) error {
 
-	// 创建压缩文件
-	archive, err := os.Create(pkgPath)
+	dir := filepath.Dir(src)
+	filePrefixName := strings.Split(filepath.Base(src), ".")[0]
+	dst := filepath.Join(dir, filePrefixName+"_"+strconv.FormatInt(time.Now().Unix(), 10)+".tar.gz")
+
+	// 创建目标文件
+	destFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer func(archive *os.File) {
-		_ = archive.Close()
-	}(archive)
+	defer func(destFile *os.File) {
+		err := destFile.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(destFile)
 
-	// 创建 zip writer
-	zipWriter := zip.NewWriter(archive)
-	defer func(zipWriter *zip.Writer) {
-		_ = zipWriter.Close()
-	}(zipWriter)
+	// 创建Gzip压缩写入器
+	gzw := gzip.NewWriter(destFile)
+	defer func(gzw *gzip.Writer) {
+		err := gzw.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(gzw)
 
-	// 遍历需要打包的路径
-	for _, srcPath := range paths {
-		// 删除最后一个 '/'
-		srcPath = strings.TrimSuffix(srcPath, string(os.PathSeparator))
+	// 创建Tar写入器
+	tw := tar.NewWriter(gzw)
+	defer func(tw *tar.Writer) {
+		err := tw.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(tw)
 
-		// 开始检查文件树
-		err = filepath.Walk(
-			srcPath,
-			func(path string, info fs.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-
-				header, err := zip.FileInfoHeader(info)
-				if err != nil {
-					return err
-				}
-
-				// 设置压缩方式
-				header.Method = zip.Deflate
-
-				// 将文件的相对路径设置为头名称
-				header.Name, err = filepath.Rel(filepath.Dir(srcPath), path)
-				if err != nil {
-					return err
-				}
-				if info.IsDir() {
-					header.Name += string(os.PathSeparator)
-				}
-
-				// 创建文件头写入器并保存文件内容
-				headerWriter, err := zipWriter.CreateHeader(header)
-				if err != nil {
-					return err
-				}
-				if info.IsDir() {
-					return nil
-				}
-				f, err := os.Open(path)
-				if err != nil {
-					return err
-				}
-				defer func(f *os.File) {
-					_ = f.Close()
-				}(f)
-				_, err = io.Copy(headerWriter, f)
-				return err
-			})
+	// 遍历源目录并将文件添加到Tar包中
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-	}
-	return nil
-}
 
-// Decompress
-// @param srcPath 压缩包路径
-// @param dstPath 解压路径
-func Decompress(srcPath, dstPath string) error {
-	reader, err := zip.OpenReader(srcPath)
-	if err != nil {
-		return err
-	}
-	defer func(reader *zip.ReadCloser) {
-		_ = reader.Close()
-	}(reader)
-	for _, file := range reader.File {
-		if err := decompress(file, dstPath); err != nil {
+		// 构建文件头信息
+		header, err := tar.FileInfoHeader(info, info.Name())
+		if err != nil {
 			return err
 		}
-	}
-	return nil
-}
 
-func decompress(file *zip.File, dstPath string) error {
-	// create the directory of file
-	filePath := path.Join(dstPath, file.Name)
-	if file.FileInfo().IsDir() {
-		if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
+		// 更新文件头中的路径信息
+		relPath, err := filepath.Rel(src, path)
+		if err != nil {
 			return err
 		}
+		header.Name = relPath
+
+		// 写入文件头
+		if err := tw.WriteHeader(header); err != nil {
+			return err
+		}
+
+		// 如果不是目录，将文件内容写入Tar包
+		if !info.IsDir() {
+			file, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer func(file *os.File) {
+				err := file.Close()
+				if err != nil {
+					panic(err)
+				}
+			}(file)
+
+			// 将文件内容复制到Tar包中
+			_, err = io.Copy(tw, file)
+			if err != nil {
+				return err
+			}
+		}
+
 		return nil
-	}
-	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-		return err
-	}
-
-	// open the file
-	r, err := file.Open()
-	if err != nil {
-		return err
-	}
-	defer func(r io.ReadCloser) {
-		_ = r.Close()
-	}(r)
-
-	// create the file
-	w, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer func(w *os.File) {
-		_ = w.Close()
-	}(w)
-
-	// save the decompressed file content
-	_, err = io.Copy(w, r)
-	return err
+	})
 }
