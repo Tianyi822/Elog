@@ -1,6 +1,9 @@
 package core
 
-import filesys "easy-go-log/fileSys"
+import (
+	filesys "easy-go-log/fileSys"
+	"easy-go-log/interface/logger"
+)
 
 type LogLevel byte
 
@@ -37,9 +40,9 @@ type Config struct {
 // Core 日志核心组件，用于对接各种输出路径，包含但不限于日志文本文件，MQ 消息队列，Kafka 消息队列，HDFS 分布式集群等
 // 这个组件中还要处理一些并发操作，防止出现日志并发写入的问题
 type Core struct {
-	LogContext chan string     // 日志内容
-	fileOp     *filesys.FileOp // 文件操作对象
-	*Config                    // 核心配置项
+	LogContext chan string      // 日志内容
+	Writer     logger.LogWriter // 文件操作对象
+	*Config                     // 核心配置项
 }
 
 // NewCoreWithConf 创建一个日志核心对象
@@ -48,7 +51,7 @@ func NewCoreWithConf(config *Config) *Core {
 
 	return &Core{
 		LogContext: make(chan string, 1000),
-		fileOp:     fop,
+		Writer:     fop,
 		Config:     config,
 	}
 }
@@ -57,7 +60,7 @@ func NewCoreWithConf(config *Config) *Core {
 func NewCore() *Core {
 	return &Core{
 		LogContext: make(chan string, 1000),
-		fileOp:     nil,
+		Writer:     nil,
 		Config: &Config{
 			Level:    LevelDebug,
 			OutPutTo: OutPutToConsole,
@@ -70,7 +73,7 @@ func (c *Core) Output() {
 	for {
 		select {
 		case log := <-c.LogContext:
-			err := c.fileOp.Write([]byte(log))
+			err := c.Writer.WriteLog([]byte(log))
 			if err != nil {
 				panic(err)
 			}
