@@ -58,7 +58,18 @@ func (fo *FileOp) ready() (err error) {
 // Close 关闭文件
 func (fo *FileOp) Close() error {
 	fo.isOpen = false
-	err := fo.file.Close()
+
+	// 将缓存中的数据落盘
+	err := fo.writer.Flush()
+	if err != nil {
+		return err
+	}
+
+	err = fo.file.Close()
+	if err != nil {
+		return err
+	}
+
 	fo.file = nil
 	fo.writer = nil
 	return err
