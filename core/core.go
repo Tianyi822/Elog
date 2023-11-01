@@ -35,7 +35,8 @@ type Config struct {
 	OutPutTo     OutPutType // 日志输出位置
 }
 
-// Core 日志核心结构体
+// Core 日志核心组件，用于对接各种输出路径，包含但不限于日志文本文件，MQ 消息队列，Kafka 消息队列，HDFS 分布式集群等
+// 这个组件中还要处理一些并发操作，防止出现日志并发写入的问题
 type Core struct {
 	LogContext chan string     // 日志内容
 	fileOp     *filesys.FileOp // 文件操作对象
