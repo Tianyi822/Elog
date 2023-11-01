@@ -1,6 +1,6 @@
 package core
 
-import filesys "easy-go-log/file-sys"
+import filesys "easy-go-log/fileSys"
 
 type LogLevel byte
 
@@ -30,8 +30,7 @@ type Config struct {
 	Level        LogLevel   // 日志级别
 	NeedCompress bool       // 是否需要压缩
 	MaxSize      int        // 以 MB 为单位
-	DirPath      string     // 文件保存路径
-	FileName     string     // 文件保存名称
+	Path         string     // 文件保存路径
 	OutPutTo     OutPutType // 日志输出位置
 }
 
@@ -45,7 +44,7 @@ type Core struct {
 
 // NewCoreWithConf 创建一个日志核心对象
 func NewCoreWithConf(config *Config) *Core {
-	fop := filesys.CreateFileOp(config.DirPath, config.FileName, config.MaxSize, config.NeedCompress)
+	fop := filesys.CreateFileOp(config.Path, config.MaxSize, config.NeedCompress)
 
 	return &Core{
 		LogContext: make(chan string, 1000),
