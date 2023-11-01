@@ -6,9 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
-	"time"
 )
 
 // IsExist 判断路径是否存在
@@ -24,26 +22,26 @@ func MustOpenFile(realPath string) (*os.File, error) {
 }
 
 // CreateFile 创建文件，先检查文件是否存在，存在就报错，不存在就创建
-func CreateFile(path, fileName string) (*os.File, error) {
-	exist := IsExist(path)
+func CreateFile(path string) (*os.File, error) {
+	dir := filepath.Dir(path)
+	exist := IsExist(dir)
 	if !exist {
-		err := os.MkdirAll(path, os.ModePerm)
+		err := os.MkdirAll(dir, os.ModePerm)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	// 文件路径
-	realPath := filepath.Join(path, fileName)
-	exist = IsExist(realPath)
+	exist = IsExist(path)
 	if !exist {
-		_, err := os.Create(realPath)
+		_, err := os.Create(path)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	file, err := os.OpenFile(realPath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +59,7 @@ func CompressToTarGz(src string) error {
 
 	dir := filepath.Dir(src)
 	filePrefixName := strings.Split(filepath.Base(src), ".")[0]
-	dst := filepath.Join(dir, filePrefixName+"_"+strconv.FormatInt(time.Now().Unix(), 10)+".tar.gz")
+	dst := filepath.Join(dir, filePrefixName+".tar.gz")
 
 	// 创建目标文件
 	destFile, err := os.Create(dst)

@@ -117,9 +117,12 @@ func (fo *FileOp) Write(context []byte) error {
 
 		// 压缩文件
 		if fo.needCompress {
-			// 获取文件前缀名\
-			src := filepath.Join(fo.dirPath, fo.fileName)
-			err = CompressToTarGz(src)
+			err = CompressToTarGz(destPath)
+			if err != nil {
+				return err
+			}
+			// 删除原文件
+			err = Remove(destPath)
 			if err != nil {
 				return err
 			}
