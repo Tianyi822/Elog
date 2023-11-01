@@ -2,43 +2,49 @@ package file_sys
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type FileOp struct {
-	file         *os.File
-	writer       *bufio.Writer
-	isOpen       bool   // 用于判断是否可以进行操作
-	needCompress bool   // 是否需要压缩
-	maxSize      int    // 以 MB 为单位
-	dirPath      string // 文件保存路径
-	fileName     string // 文件保存名称
-	filePath     string // 文件真实路径
+	file           *os.File
+	writer         *bufio.Writer
+	isOpen         bool   // 用于判断是否可以进行操作
+	needCompress   bool   // 是否需要压缩
+	maxSize        int    // 以 MB 为单位
+	path           string // 文件路径
+	filePrefixName string // 文件前缀名
+	fileSuffixName string // 文件后缀名
 }
 
 // CreateFileOp 只是创建一个文件操作对象，但不代表要立即操作这个文件，所以 isOpen 默认为 false
-func CreateFileOp(dirPath, fileName string, maxSize int, needCompress bool) *FileOp {
+func CreateFileOp(path string, maxSize int, needCompress bool) *FileOp {
+	fileInfo := strings.Split(filepath.Base(path), ".")
+
 	return &FileOp{
-		dirPath:      dirPath,
-		fileName:     fileName,
-		filePath:     filepath.Join(dirPath, fileName),
-		needCompress: needCompress,
-		isOpen:       false,
-		maxSize:      maxSize,
+		filePrefixName: fileInfo[0],
+		fileSuffixName: fileInfo[1],
+		path:           path,
+		needCompress:   needCompress,
+		isOpen:         false,
+		maxSize:        maxSize,
 	}
 }
 
 // ready 用于进行文件操作前的准备工作
 func (fo *FileOp) ready() (err error) {
 	if fo.file == nil {
-		if IsExist(fo.filePath) {
-			fo.file, err = MustOpenFile(fo.filePath)
+		if IsExist(fo.path) {
+			fo.file, err = MustOpenFile(fo.path)
 			if err != nil {
 				return err
 			}
 		} else {
-			fo.file, err = CreateFile(fo.dirPath, fo.fileName)
+			fo.file, err = CreateFile(fo.path)
 			if err != nil {
 				return err
 			}
