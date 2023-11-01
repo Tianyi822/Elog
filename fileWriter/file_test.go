@@ -12,7 +12,7 @@ func TestCreateFileOp(t *testing.T) {
 		NeedCompress: false,
 	}
 
-	fo := CreateFileOp(config)
+	fo := CreateFileWriter(config)
 	err := fo.ready()
 	if err != nil {
 		t.Fatalf("日志文件准备发生错误: %v", err)
@@ -36,7 +36,7 @@ func TestFileOp_Write(t *testing.T) {
 		NeedCompress: true,
 	}
 
-	fo := CreateFileOp(config)
+	fo := CreateFileWriter(config)
 	times := 0
 	for {
 		err := fo.WriteLog([]byte("chentyit OHHHHHHHHH ttttt"))

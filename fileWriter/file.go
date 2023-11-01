@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-type FileOp struct {
+type FileWriter struct {
 	file           *os.File
 	writer         *bufio.Writer
 	isOpen         bool   // 用于判断是否可以进行操作
@@ -28,11 +28,11 @@ type FileLogConfig struct {
 	Path         string // 文件保存路径
 }
 
-// CreateFileOp 只是创建一个文件操作对象，但不代表要立即操作这个文件，所以 isOpen 默认为 false
-func CreateFileOp(config *FileLogConfig) *FileOp {
+// CreateFileWriter 只是创建一个文件操作对象，但不代表要立即操作这个文件，所以 isOpen 默认为 false
+func CreateFileWriter(config *FileLogConfig) *FileWriter {
 	fileInfo := strings.Split(filepath.Base(config.Path), ".")
 
-	return &FileOp{
+	return &FileWriter{
 		filePrefixName: fileInfo[0],
 		fileSuffixName: fileInfo[1],
 		path:           config.Path,
@@ -43,87 +43,87 @@ func CreateFileOp(config *FileLogConfig) *FileOp {
 }
 
 // ready 用于进行文件操作前的准备工作
-func (fo *FileOp) ready() (err error) {
-	if fo.file == nil {
-		if IsExist(fo.path) {
-			fo.file, err = MustOpenFile(fo.path)
+func (fw *FileWriter) ready() (err error) {
+	if fw.file == nil {
+		if IsExist(fw.path) {
+			fw.file, err = MustOpenFile(fw.path)
 			if err != nil {
 				return err
 			}
 		} else {
-			fo.file, err = CreateFile(fo.path)
+			fw.file, err = CreateFile(fw.path)
 			if err != nil {
 				return err
 			}
 		}
-		fo.writer = bufio.NewWriter(fo.file)
+		fw.writer = bufio.NewWriter(fw.file)
 	}
-	fo.isOpen = true
+	fw.isOpen = true
 	return nil
 }
 
 // Close 关闭文件
-func (fo *FileOp) Close() error {
-	fo.isOpen = false
+func (fw *FileWriter) Close() error {
+	fw.isOpen = false
 
 	// 将缓存中的数据落盘
-	err := fo.writer.Flush()
+	err := fw.writer.Flush()
 	if err != nil {
 		return err
 	}
 
-	err = fo.file.Close()
+	err = fw.file.Close()
 	if err != nil {
 		return err
 	}
 
-	fo.file = nil
-	fo.writer = nil
+	fw.file = nil
+	fw.writer = nil
 	return err
 }
 
 // needSplit 判断是否需要进行分片
-func (fo *FileOp) needSplit() bool {
+func (fw *FileWriter) needSplit() bool {
 	// 判断是否需要进行分片
-	if fo.maxSize <= 0 {
+	if fw.maxSize <= 0 {
 		return false
 	}
 
 	// 判断文件大小是否超过最大值
-	fileInfo, err := fo.file.Stat()
+	fileInfo, err := fw.file.Stat()
 	if err != nil {
 		return false
 	}
 
-	return fileInfo.Size() > int64(fo.maxSize*1024*1024)
+	return fileInfo.Size() > int64(fw.maxSize*1024*1024)
 }
 
 // WriteLog 写入日志数据
 // 该函数不做并发处理，传入的数据都是通过 channel 传递过来的，所以不需要考虑并发问题
 // 并不会出现多个协程往同一个文件里面写数据，文件操作模块主要集中于对日志文件的分片管理，对历史日志打包
-func (fo *FileOp) WriteLog(context []byte) error {
-	if !fo.isOpen {
-		return fo.ready()
+func (fw *FileWriter) WriteLog(context []byte) error {
+	if !fw.isOpen {
+		return fw.ready()
 	}
 
 	// 判断是否需要进行分片
-	if fo.needSplit() {
+	if fw.needSplit() {
 		// 关闭文件
-		err := fo.Close()
+		err := fw.Close()
 		if err != nil {
 			return err
 		}
 
 		// 修改文件名
-		newFileName := fmt.Sprintf("%v_%v.%v", fo.filePrefixName, strconv.FormatInt(time.Now().Unix(), 10), fo.fileSuffixName)
-		destPath := filepath.Join(filepath.Dir(fo.path), newFileName)
-		err = os.Rename(fo.path, destPath)
+		newFileName := fmt.Sprintf("%v_%v.%v", fw.filePrefixName, strconv.FormatInt(time.Now().Unix(), 10), fw.fileSuffixName)
+		destPath := filepath.Join(filepath.Dir(fw.path), newFileName)
+		err = os.Rename(fw.path, destPath)
 		if err != nil {
 			return err
 		}
 
 		// 压缩文件
-		if fo.needCompress {
+		if fw.needCompress {
 			err = CompressFileToTarGz(destPath)
 			if err != nil {
 				return err
@@ -136,7 +136,7 @@ func (fo *FileOp) WriteLog(context []byte) error {
 		}
 
 		// 重新打开文件
-		err = fo.ready()
+		err = fw.ready()
 		if err != nil {
 			return err
 		}
@@ -144,6 +144,6 @@ func (fo *FileOp) WriteLog(context []byte) error {
 
 	// 写入数据
 	buf := append(context, '\n')
-	_, err := fo.writer.Write(buf)
+	_, err := fw.writer.Write(buf)
 	return err
 }

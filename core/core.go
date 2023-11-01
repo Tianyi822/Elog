@@ -36,8 +36,8 @@ type Core struct {
 }
 
 // NewCoreWithFileLogConf 创建一个日志核心对象，输出到文件
-func NewCoreWithFileLogConf(config *filesys.FileLogConfig) *Core {
-	fop := filesys.CreateFileOp(config)
+func NewCoreWithFileLogConf(config *fileWriter.FileLogConfig) *Core {
+	fop := fileWriter.CreateFileWriter(config)
 
 	return &Core{
 		LogContext: make(chan string, 1000),
