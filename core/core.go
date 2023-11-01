@@ -28,31 +28,20 @@ const (
 	// TODO: 输出到数据库，Kafka，MQ 等，后续再实现
 )
 
-// Config 核心配置项
-type Config struct {
-	Level        LogLevel   // 日志级别
-	NeedCompress bool       // 是否需要压缩
-	MaxSize      int        // 以 MB 为单位
-	Path         string     // 文件保存路径
-	OutPutTo     OutPutType // 日志输出位置
-}
-
 // Core 日志核心组件，用于对接各种输出路径，包含但不限于日志文本文件，MQ 消息队列，Kafka 消息队列，HDFS 分布式集群等
 // 这个组件中还要处理一些并发操作，防止出现日志并发写入的问题
 type Core struct {
 	LogContext chan string      // 日志内容
-	Writer     logger.LogWriter // 文件操作对象
-	*Config                     // 核心配置项
+	Writer     logger.LogWriter // 日志写入对象（实现了 LogWriter 接口的实例）
 }
 
-// NewCoreWithConf 创建一个日志核心对象
-func NewCoreWithConf(config *Config) *Core {
-	fop := filesys.CreateFileOp(config.Path, config.MaxSize, config.NeedCompress)
+// NewCoreWithFileLogConf 创建一个日志核心对象，输出到文件
+func NewCoreWithFileLogConf(config *filesys.FileLogConfig) *Core {
+	fop := filesys.CreateFileOp(config)
 
 	return &Core{
 		LogContext: make(chan string, 1000),
 		Writer:     fop,
-		Config:     config,
 	}
 }
 
@@ -61,10 +50,6 @@ func NewCore() *Core {
 	return &Core{
 		LogContext: make(chan string, 1000),
 		Writer:     nil,
-		Config: &Config{
-			Level:    LevelDebug,
-			OutPutTo: OutPutToConsole,
-		},
 	}
 }
 
