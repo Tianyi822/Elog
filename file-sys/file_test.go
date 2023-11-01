@@ -6,9 +6,9 @@ import (
 )
 
 func TestCreateFileOp(t *testing.T) {
-	path := "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log"
+	path := "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log/test.log"
 
-	fo := CreateFileOp(path, "test.elog", 1, false)
+	fo := CreateFileOp(path, 1, false)
 	err := fo.ready()
 	if err != nil {
 		t.Fatalf("日志文件准备发生错误: %v", err)
@@ -28,7 +28,7 @@ func TestIsExists(t *testing.T) {
 func TestFileOp_Write(t *testing.T) {
 	path := "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log"
 
-	fo := CreateFileOp(path, "test.elog", 1, true)
+	fo := CreateFileOp(path, 1, true)
 	for {
 		err := fo.Write([]byte("test"))
 		if err != nil {
