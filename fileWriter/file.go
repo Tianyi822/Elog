@@ -1,4 +1,4 @@
-package fileSys
+package fileWriter
 
 import (
 	"bufio"

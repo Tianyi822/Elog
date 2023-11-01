@@ -1,7 +1,7 @@
 package core
 
 import (
-	filesys "easy-go-log/fileSys"
+	fileWriter "easy-go-log/fileWriter"
 	"easy-go-log/interface/logger"
 )
 
