@@ -91,10 +91,10 @@ func (fo *FileOp) needSplit() bool {
 	return fileInfo.Size() > int64(fo.maxSize*1024*1024)
 }
 
-// Write 写入数据
+// WriteLog 写入日志数据
 // 该函数不做并发处理，传入的数据都是通过 channel 传递过来的，所以不需要考虑并发问题
 // 并不会出现多个协程往同一个文件里面写数据，文件操作模块主要集中于对日志文件的分片管理，对历史日志打包
-func (fo *FileOp) Write(context []byte) error {
+func (fo *FileOp) WriteLog(context []byte) error {
 	if !fo.isOpen {
 		return fo.ready()
 	}
