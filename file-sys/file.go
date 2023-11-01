@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -94,10 +95,10 @@ func (fo *FileOp) Write(context []byte) error {
 
 		// 压缩文件
 		if fo.needCompress {
-			// 获取文件名和后缀
-			fInfo := strings.Split(fo.fileName, ".")
+			// 获取文件前缀名
+			filePrefixName := strings.Split(fo.fileName, ".")[0]
 			src := filepath.Join(fo.dirPath, fo.fileName)
-			dst := filepath.Join(fo.dirPath, fInfo[0]+"_"+time.Now().Format("2006-01-02_15:04:05")+".zip")
+			dst := filepath.Join(fo.dirPath, filePrefixName+"_"+strconv.FormatInt(time.Now().Unix(), 10)+".zip")
 			err = Compress(dst, src)
 			if err != nil {
 				return err
