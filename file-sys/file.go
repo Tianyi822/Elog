@@ -16,7 +16,7 @@ type FileOp struct {
 	maxSize      int    // 以 MB 为单位
 	dirPath      string // 文件保存路径
 	fileName     string // 文件保存名称
-	realPath     string // 文件真实路径
+	filePath     string // 文件真实路径
 }
 
 // CreateFileOp 只是创建一个文件操作对象，但不代表要立即操作这个文件，所以 isOpen 默认为 false
@@ -24,7 +24,7 @@ func CreateFileOp(dirPath, fileName string, maxSize int, needCompress bool) *Fil
 	return &FileOp{
 		dirPath:      dirPath,
 		fileName:     fileName,
-		realPath:     filepath.Join(dirPath, fileName),
+		filePath:     filepath.Join(dirPath, fileName),
 		needCompress: needCompress,
 		isOpen:       false,
 		maxSize:      maxSize,
@@ -34,8 +34,8 @@ func CreateFileOp(dirPath, fileName string, maxSize int, needCompress bool) *Fil
 // ready 用于进行文件操作前的准备工作
 func (fo *FileOp) ready() (err error) {
 	if fo.file == nil {
-		if IsExist(fo.realPath) {
-			fo.file, err = MustOpenFile(fo.realPath)
+		if IsExist(fo.filePath) {
+			fo.file, err = MustOpenFile(fo.filePath)
 			if err != nil {
 				return err
 			}
