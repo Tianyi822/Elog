@@ -117,7 +117,7 @@ func (fo *FileOp) Write(context []byte) error {
 
 		// 压缩文件
 		if fo.needCompress {
-			err = CompressToTarGz(destPath)
+			err = CompressFileToTarGz(destPath)
 			if err != nil {
 				return err
 			}
