@@ -29,10 +29,19 @@ func TestFileOp_Write(t *testing.T) {
 	path := "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log/test.log"
 
 	fo := CreateFileOp(path, 1, true)
+	times := 0
 	for {
-		err := fo.Write([]byte("test"))
+		err := fo.WriteLog([]byte("chentyit OHHHHHHHHH ttttt"))
 		if err != nil {
 			t.Fatalf("写入日志发生错误: %v", err)
+		}
+		times += 1
+		if times == 100_0000 {
+			err = fo.Close()
+			if err != nil {
+				t.Fatalf("结束写入发生错误: %v", err)
+			}
+			break
 		}
 	}
 }
