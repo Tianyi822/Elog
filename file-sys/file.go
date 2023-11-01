@@ -107,6 +107,14 @@ func (fo *FileOp) Write(context []byte) error {
 			return err
 		}
 
+		// 修改文件名
+		newFileName := fmt.Sprintf("%v_%v.%v", fo.filePrefixName, strconv.FormatInt(time.Now().Unix(), 10), fo.fileSuffixName)
+		destPath := filepath.Join(filepath.Dir(fo.path), newFileName)
+		err = os.Rename(fo.path, destPath)
+		if err != nil {
+			return err
+		}
+
 		// 压缩文件
 		if fo.needCompress {
 			// 获取文件前缀名\
