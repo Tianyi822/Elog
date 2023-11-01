@@ -21,17 +21,24 @@ type FileOp struct {
 	fileSuffixName string // 文件后缀名
 }
 
+// FileLogConfig 日志文件配置项
+type FileLogConfig struct {
+	NeedCompress bool   // 是否需要压缩
+	MaxSize      int    // 以 MB 为单位
+	Path         string // 文件保存路径
+}
+
 // CreateFileOp 只是创建一个文件操作对象，但不代表要立即操作这个文件，所以 isOpen 默认为 false
-func CreateFileOp(path string, maxSize int, needCompress bool) *FileOp {
-	fileInfo := strings.Split(filepath.Base(path), ".")
+func CreateFileOp(config *FileLogConfig) *FileOp {
+	fileInfo := strings.Split(filepath.Base(config.Path), ".")
 
 	return &FileOp{
 		filePrefixName: fileInfo[0],
 		fileSuffixName: fileInfo[1],
-		path:           path,
-		needCompress:   needCompress,
+		path:           config.Path,
+		needCompress:   config.NeedCompress,
 		isOpen:         false,
-		maxSize:        maxSize,
+		maxSize:        config.MaxSize,
 	}
 }
 

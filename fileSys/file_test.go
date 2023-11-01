@@ -6,9 +6,13 @@ import (
 )
 
 func TestCreateFileOp(t *testing.T) {
-	path := "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log/test.log"
+	config := &FileLogConfig{
+		Path:         "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log/test.log",
+		MaxSize:      1,
+		NeedCompress: false,
+	}
 
-	fo := CreateFileOp(path, 1, false)
+	fo := CreateFileOp(config)
 	err := fo.ready()
 	if err != nil {
 		t.Fatalf("日志文件准备发生错误: %v", err)
@@ -26,9 +30,13 @@ func TestIsExists(t *testing.T) {
 }
 
 func TestFileOp_Write(t *testing.T) {
-	path := "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log/test.log"
+	config := &FileLogConfig{
+		Path:         "E:\\MineProgram\\go-workplace\\easy-go-log\\log\\test.log",
+		MaxSize:      1,
+		NeedCompress: true,
+	}
 
-	fo := CreateFileOp(path, 1, true)
+	fo := CreateFileOp(config)
 	times := 0
 	for {
 		err := fo.WriteLog([]byte("chentyit OHHHHHHHHH ttttt"))
