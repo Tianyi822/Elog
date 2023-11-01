@@ -26,7 +26,7 @@ func TestIsExists(t *testing.T) {
 }
 
 func TestFileOp_Write(t *testing.T) {
-	path := "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log"
+	path := "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log/test.log"
 
 	fo := CreateFileOp(path, 1, true)
 	for {
