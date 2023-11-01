@@ -97,8 +97,8 @@ func (fo *FileOp) Write(context []byte) error {
 			// 获取文件名和后缀
 			fInfo := strings.Split(fo.fileName, ".")
 			src := filepath.Join(fo.dirPath, fo.fileName)
-			dst := filepath.Join(fo.dirPath, fInfo[0]+"_"+time.Now().Format("2006-01-02_15:04:05")+"."+fInfo[1])
-			err = Compress(dst+".zip", src)
+			dst := filepath.Join(fo.dirPath, fInfo[0]+"_"+time.Now().Format("2006-01-02_15:04:05")+".zip")
+			err = Compress(dst, src)
 			if err != nil {
 				return err
 			}
