@@ -2,6 +2,7 @@ package fileWriter
 
 import (
 	"bufio"
+	easy_go_log "easy-go-log"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,6 +17,7 @@ type FileWriter struct {
 	isOpen         bool   // 用于判断是否可以进行操作
 	needCompress   bool   // 是否需要压缩
 	maxSize        int    // 以 MB 为单位
+	hash           string // 每个 FileWriter 有且只有一个唯一的 hash 值
 	path           string // 文件路径
 	filePrefixName string // 文件前缀名
 	fileSuffixName string // 文件后缀名
@@ -33,6 +35,7 @@ func CreateFileWriter(config *FWConfig) *FileWriter {
 	fileInfo := strings.Split(filepath.Base(config.Path), ".")
 
 	return &FileWriter{
+		hash:           easy_go_log.GenHash(config.Path),
 		filePrefixName: fileInfo[0],
 		fileSuffixName: fileInfo[1],
 		path:           config.Path,
@@ -40,6 +43,10 @@ func CreateFileWriter(config *FWConfig) *FileWriter {
 		isOpen:         false,
 		maxSize:        config.MaxSize,
 	}
+}
+
+func (fw *FileWriter) GetHash() string {
+	return fw.hash
 }
 
 // ready 用于进行文件操作前的准备工作
