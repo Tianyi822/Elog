@@ -6,7 +6,7 @@ import (
 )
 
 func TestCreateFileOp(t *testing.T) {
-	config := &FileLogConfig{
+	config := &FWConfig{
 		Path:         "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log/test.log",
 		MaxSize:      1,
 		NeedCompress: false,
@@ -30,7 +30,7 @@ func TestIsExists(t *testing.T) {
 }
 
 func TestFileOp_Write(t *testing.T) {
-	config := &FileLogConfig{
+	config := &FWConfig{
 		Path:         "E:\\MineProgram\\go-workplace\\easy-go-log\\log\\test.log",
 		MaxSize:      1,
 		NeedCompress: true,

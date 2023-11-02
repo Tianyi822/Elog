@@ -21,15 +21,15 @@ type FileWriter struct {
 	fileSuffixName string // 文件后缀名
 }
 
-// FileLogConfig 日志文件配置项
-type FileLogConfig struct {
+// FWConfig 日志文件配置项
+type FWConfig struct {
 	NeedCompress bool   // 是否需要压缩
 	MaxSize      int    // 以 MB 为单位
 	Path         string // 文件保存路径
 }
 
 // CreateFileWriter 只是创建一个文件操作对象，但不代表要立即操作这个文件，所以 isOpen 默认为 false
-func CreateFileWriter(config *FileLogConfig) *FileWriter {
+func CreateFileWriter(config *FWConfig) *FileWriter {
 	fileInfo := strings.Split(filepath.Base(config.Path), ".")
 
 	return &FileWriter{
