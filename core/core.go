@@ -1,7 +1,7 @@
 package core
 
 import (
-	fileWriter "easy-go-log/fileWriter"
+	"easy-go-log/fileWriter"
 	"easy-go-log/interface/logger"
 )
 
@@ -31,31 +31,45 @@ const (
 // 这个组件中还要处理一些并发操作，防止出现日志并发写入的问题
 type Core struct {
 	// 日志内容
-	LogContext chan string
+	LogChannel chan string
 
 	// 日志写入对象（实现了 LogWriter 接口的实例）
 	// 因为会向控制台，文本文件，kafka 等组件写入，所以会针对不同的写入方式创建一个 writer，使用 map 进行管理
 	Writers map[string]logger.LogWriter
+
+	// 用于标识该核心是否已经配置完成
+	isOk bool
 }
 
-// NewCoreWithFileLogConf 创建一个日志核心对象，输出到文件
-func NewCoreWithFileLogConf(config *fileWriter.FWConfig) *Core {
-	fop := fileWriter.CreateFileWriter(config)
-
-	core := &Core{
-		LogContext: make(chan string, 1000),
-		Writers:    make(map[string]logger.LogWriter),
-	}
-
-	core.Writers[fop.GetHash()] = fop
-
-	return core
-}
-
-// NewCore 创建一个日志核心对象
+// NewCore 无参数配置，默认输出到控制台，且通道默认容量为 2233
 func NewCore() *Core {
 	return &Core{
-		LogContext: make(chan string, 1000),
+		LogChannel: make(chan string, 2233),
 		Writers:    nil,
+		isOk:       false,
 	}
+}
+
+// NewBufferCore 创建一个带有缓冲区的 Core
+func NewBufferCore(buf int) *Core {
+	return &Core{
+		LogChannel: make(chan string, buf),
+		Writers:    nil,
+		isOk:       false,
+	}
+}
+
+// Create 表示 Core 配置装配已完成，可以使用
+func (c *Core) Create() *Core {
+	c.isOk = true
+	return c
+}
+
+// ConfigFileWriter 用于装配文件写入模块
+func (c *Core) ConfigFileWriter(fConf *fileWriter.FWConfig) *Core {
+	fWriter := fileWriter.CreateFileWriter(fConf)
+
+	c.Writers[fWriter.GetHash()] = fWriter
+
+	return c
 }
