@@ -1,20 +1,9 @@
 package core
 
 import (
+	"easy-go-log/consoleWriter"
 	"easy-go-log/fileWriter"
 	"easy-go-log/logger"
-)
-
-// LogLevel 日志级别
-type LogLevel byte
-
-const (
-	LevelDebug LogLevel = 1 << iota // 1
-	LevelInfo                       // 2
-	LevelWarn                       // 4
-	LevelError                      // 8
-	LevelFatal                      // 16
-	LevelPanic                      // 32
 )
 
 // OutPutType 输出方式
@@ -36,40 +25,68 @@ type Core struct {
 	// 日志写入对象（实现了 LogWriter 接口的实例）
 	// 因为会向控制台，文本文件，kafka 等组件写入，所以会针对不同的写入方式创建一个 writer，使用 map 进行管理
 	Writers map[string]logger.LogWriter
-
-	// 用于标识该核心是否已经配置完成
-	isOk bool
 }
 
-// NewCore 无参数配置，默认输出到控制台，且通道默认容量为 2233
-func NewCore() *Core {
-	return &Core{
+// Config 链式配置 Core 工具
+type Config struct {
+	core *Core
+	isOk bool // 用于标识该核心是否已经配置完成
+}
+
+// NewCore 无参数配置，且通道默认容量为 2233
+func NewCore() *Config {
+	core := &Core{
 		LogChannel: make(chan string, 2233),
 		Writers:    nil,
-		isOk:       false,
+	}
+
+	return &Config{
+		core: core,
+		isOk: false,
 	}
 }
 
-// NewBufferCore 创建一个带有缓冲区的 Core
-func NewBufferCore(buf int) *Core {
-	return &Core{
+// NewBufferCore 创建一个带有缓冲区的配置
+func NewBufferCore(buf int) *Config {
+	core := &Core{
 		LogChannel: make(chan string, buf),
 		Writers:    nil,
-		isOk:       false,
+	}
+
+	return &Config{
+		core: core,
+		isOk: false,
 	}
 }
 
 // Create 表示 Core 配置装配已完成，可以使用
-func (c *Core) Create() *Core {
-	c.isOk = true
-	return c
+func (conf *Config) Create() *Core {
+	conf.isOk = true
+	return conf.core
 }
 
-// ConfigFileWriter 用于装配文件写入模块
-func (c *Core) ConfigFileWriter(fConf *fileWriter.FWConfig) *Core {
+// checkWriters 用于检查 Writers 是否被初始化
+func (conf *Config) addWriter(writer logger.LogWriter) *Config {
+	if conf.core.Writers == nil {
+		conf.core.Writers = make(map[string]logger.LogWriter)
+	}
+	conf.core.Writers[writer.GetHash()] = writer
+
+	return conf
+}
+
+// AddConsoleWriter 装配控制台写入模块
+func (conf *Config) AddConsoleWriter() *Config {
+	cWriter := &consoleWriter.ConsoleWriter{}
+	conf.addWriter(cWriter)
+
+	return conf
+}
+
+// AddFileWriter 装配文件写入模块
+func (conf *Config) AddFileWriter(fConf *fileWriter.FWConfig) *Config {
 	fWriter := fileWriter.CreateFileWriter(fConf)
+	conf.addWriter(fWriter)
 
-	c.Writers[fWriter.GetHash()] = fWriter
-
-	return c
+	return conf
 }
