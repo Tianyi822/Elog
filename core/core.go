@@ -10,11 +10,49 @@ import (
 // 这个组件中还要处理一些并发操作，防止出现日志并发写入的问题
 type Core struct {
 	// 日志内容
-	LogChannel chan string
+	LogChannel <-chan []byte
 
 	// 日志写入对象（实现了 LogWriter 接口的实例）
 	// 因为会向控制台，文本文件，kafka 等组件写入，所以会针对不同的写入方式创建一个 writer，使用 map 进行管理
 	Writers map[string]logger.LogWriter
+}
+
+// writeLog 用于写入日志
+func (c *Core) writeLog(content []byte) {
+	for _, writer := range c.Writers {
+		err := writer.WriteLog(content)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+// closeWriters 用于关闭所有的写入器
+func (c *Core) closeWriters() {
+	for _, writer := range c.Writers {
+		err := writer.Close()
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+// Start 启动日志核心
+func (c *Core) Start() {
+	go func() {
+		for {
+			select {
+			case content, ok := <-c.LogChannel:
+				if ok {
+					c.writeLog(content)
+				} else {
+					c.writeLog([]byte("The log channel is closed and the log core exits"))
+					c.closeWriters()
+					return
+				}
+			}
+		}
+	}()
 }
 
 // Config 链式配置 Core 工具
@@ -23,23 +61,10 @@ type Config struct {
 	isOk bool // 用于标识该核心是否已经配置完成
 }
 
-// NewCore 无参数配置，且通道默认容量为 2233
-func NewCore() *Config {
+// NewCore 创建一个 Core 实例
+func NewCore(ch <-chan []byte) *Config {
 	core := &Core{
-		LogChannel: make(chan string, 2233),
-		Writers:    nil,
-	}
-
-	return &Config{
-		core: core,
-		isOk: false,
-	}
-}
-
-// NewBufferCore 创建一个带有缓冲区的配置
-func NewBufferCore(buf int) *Config {
-	core := &Core{
-		LogChannel: make(chan string, buf),
+		LogChannel: ch,
 		Writers:    nil,
 	}
 
