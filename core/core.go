@@ -3,7 +3,6 @@ package core
 import (
 	fileWriter "easy-go-log/fileWriter"
 	"easy-go-log/interface/logger"
-	"path/filepath"
 )
 
 type LogLevel byte
@@ -42,14 +41,13 @@ type Core struct {
 // NewCoreWithFileLogConf 创建一个日志核心对象，输出到文件
 func NewCoreWithFileLogConf(config *fileWriter.FWConfig) *Core {
 	fop := fileWriter.CreateFileWriter(config)
-	fileName := filepath.Base(config.Path)
 
 	core := &Core{
 		LogContext: make(chan string, 1000),
 		Writers:    make(map[string]logger.LogWriter),
 	}
 
-	core.Writers[fileName] = fop
+	core.Writers[fop.GetHash()] = fop
 
 	return core
 }
