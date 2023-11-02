@@ -2,7 +2,7 @@ package core
 
 import (
 	"easy-go-log/fileWriter"
-	"easy-go-log/interface/logger"
+	"easy-go-log/logger"
 )
 
 // LogLevel 日志级别
