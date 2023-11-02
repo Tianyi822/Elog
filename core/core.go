@@ -6,16 +6,6 @@ import (
 	"easy-go-log/logger"
 )
 
-// OutPutType 输出方式
-type OutPutType byte
-
-// 用于标识不同的输出模式
-const (
-	OutPutToConsole OutPutType = 1 << iota
-	OutPutToFile
-	OutPutToKafka
-)
-
 // Core 日志核心组件，用于对接各种输出路径，包含但不限于日志文本文件，MQ 消息队列，Kafka 消息队列，HDFS 分布式集群等
 // 这个组件中还要处理一些并发操作，防止出现日志并发写入的问题
 type Core struct {
