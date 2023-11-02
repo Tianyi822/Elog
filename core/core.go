@@ -5,16 +5,16 @@ import (
 	"easy-go-log/interface/logger"
 )
 
+// LogLevel 日志级别
 type LogLevel byte
 
 const (
-	// LevelDebug 日志级别
-	LevelDebug LogLevel = iota
-	LevelInfo
-	LevelWarn
-	LevelError
-	LevelFatal
-	LevelPanic
+	LevelDebug LogLevel = 1 << iota // 1
+	LevelInfo                       // 2
+	LevelWarn                       // 4
+	LevelError                      // 8
+	LevelFatal                      // 16
+	LevelPanic                      // 32
 )
 
 // OutPutType 输出方式
@@ -22,9 +22,9 @@ type OutPutType byte
 
 // 用于标识不同的输出模式
 const (
-	OutPutToConsole OutPutType = 1
-	OutPutToFile    OutPutType = 1 << OutPutToConsole
-	OutPutToKafka   OutPutType = 2 << OutPutToConsole
+	OutPutToConsole OutPutType = 1 << iota
+	OutPutToFile
+	OutPutToKafka
 )
 
 // Core 日志核心组件，用于对接各种输出路径，包含但不限于日志文本文件，MQ 消息队列，Kafka 消息队列，HDFS 分布式集群等
