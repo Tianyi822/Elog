@@ -152,5 +152,13 @@ func (fw *FileWriter) WriteLog(context []byte) error {
 	// 写入数据
 	buf := append(context, '\n')
 	_, err := fw.writer.Write(buf)
+	if err != nil {
+		return err
+	}
+	// 数据落盘
+	err = fw.writer.Flush()
+	if err != nil {
+		return err
+	}
 	return err
 }
