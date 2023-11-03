@@ -2,7 +2,6 @@ package core
 
 import (
 	"easy-go-log/fileWriter"
-	easy_go_log "easy-go-log/uitls"
 	"fmt"
 	"testing"
 	"time"
@@ -32,8 +31,8 @@ func TestCore_Write(t *testing.T) {
 	core := NewCore(ch).AddFileWriter(fConf).AddConsoleWriter().Create()
 	core.Start()
 
-	for i := 0; i < 100; i++ {
-		content := easy_go_log.GenHash(fmt.Sprintf("test %d", i))
+	for i := 0; i < 10000; i++ {
+		content := fmt.Sprintf("test %d", i)
 		ch <- []byte(content)
 	}
 	time.Sleep(5 * time.Second)
