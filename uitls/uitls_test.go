@@ -1,4 +1,4 @@
-package easy_go_log
+package uitls
 
 import (
 	"fmt"

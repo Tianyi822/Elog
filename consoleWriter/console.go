@@ -1,7 +1,7 @@
 package consoleWriter
 
 import (
-	elog "easy-go-log"
+	elog "easy-go-log/uitls"
 	"fmt"
 )
 

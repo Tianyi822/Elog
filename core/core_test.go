@@ -1,8 +1,8 @@
 package core
 
 import (
-	easy_go_log "easy-go-log"
 	"easy-go-log/fileWriter"
+	easy_go_log "easy-go-log/uitls"
 	"fmt"
 	"testing"
 	"time"

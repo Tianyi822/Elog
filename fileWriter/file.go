@@ -2,7 +2,7 @@ package fileWriter
 
 import (
 	"bufio"
-	easy_go_log "easy-go-log"
+	easy_go_log "easy-go-log/uitls"
 	"fmt"
 	"os"
 	"path/filepath"
