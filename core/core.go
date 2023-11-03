@@ -10,7 +10,7 @@ import (
 // 这个组件中还要处理一些并发操作，防止出现日志并发写入的问题
 type Core struct {
 	// 日志内容
-	LogChannel <-chan []byte
+	LogChannel chan []byte
 
 	// 日志写入对象（实现了 LogWriter 接口的实例）
 	// 因为会向控制台，文本文件，kafka 等组件写入，所以会针对不同的写入方式创建一个 writer，使用 map 进行管理
@@ -55,6 +55,16 @@ func (c *Core) Start() {
 	}()
 }
 
+// Write 向日志核心写入日志
+func (c *Core) Write(content []byte) {
+	c.LogChannel <- content
+}
+
+// Close 关闭日志核心
+func (c *Core) Close() {
+	close(c.LogChannel)
+}
+
 // Config 链式配置 Core 工具
 type Config struct {
 	core *Core
@@ -62,14 +72,25 @@ type Config struct {
 }
 
 // NewCore 创建一个 Core 实例
-func NewCore(ch <-chan []byte) *Config {
+func NewCore() *Config {
 	core := &Core{
-		LogChannel: ch,
+		LogChannel: make(chan []byte, 256),
 		Writers:    nil,
 	}
 
 	return &Config{
 		core: core,
+		isOk: false,
+	}
+}
+
+// NewCoreWithBuffer 创建一个 Core 实例，指定缓冲区大小
+func NewCoreWithBuffer(buf int) *Config {
+	return &Config{
+		core: &Core{
+			LogChannel: make(chan []byte, buf),
+			Writers:    nil,
+		},
 		isOk: false,
 	}
 }
