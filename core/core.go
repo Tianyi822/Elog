@@ -1,9 +1,9 @@
 package core
 
 import (
+	"gitee.com/xxc_opensource/elog"
 	"gitee.com/xxc_opensource/elog/consoleWriter"
 	"gitee.com/xxc_opensource/elog/fileWriter"
-	"gitee.com/xxc_opensource/elog/logger"
 )
 
 // Core 日志核心组件，用于对接各种输出路径，包含但不限于日志文本文件，MQ 消息队列，Kafka 消息队列，HDFS 分布式集群等
@@ -14,7 +14,7 @@ type Core struct {
 
 	// 日志写入对象（实现了 LogWriter 接口的实例）
 	// 因为会向控制台，文本文件，kafka 等组件写入，所以会针对不同的写入方式创建一个 writer，使用 map 进行管理
-	Writers map[string]logger.LogWriter
+	Writers map[string]elog.LogWriter
 }
 
 // writeLog 用于写入日志
@@ -102,9 +102,9 @@ func (conf *Config) Create() *Core {
 }
 
 // checkWriters 用于检查 Writers 是否被初始化
-func (conf *Config) addWriter(writer logger.LogWriter) *Config {
+func (conf *Config) addWriter(writer elog.LogWriter) *Config {
 	if conf.core.Writers == nil {
-		conf.core.Writers = make(map[string]logger.LogWriter)
+		conf.core.Writers = make(map[string]elog.LogWriter)
 	}
 	conf.core.Writers[writer.GetHash()] = writer
 
