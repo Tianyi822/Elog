@@ -52,13 +52,13 @@ func (fw *FileWriter) GetHash() string {
 // ready 用于进行文件操作前的准备工作
 func (fw *FileWriter) ready() (err error) {
 	if fw.file == nil {
-		if IsExist(fw.path) {
-			fw.file, err = MustOpenFile(fw.path)
+		if isExist(fw.path) {
+			fw.file, err = mustOpenFile(fw.path)
 			if err != nil {
 				return err
 			}
 		} else {
-			fw.file, err = CreateFile(fw.path)
+			fw.file, err = createFile(fw.path)
 			if err != nil {
 				return err
 			}
@@ -131,12 +131,12 @@ func (fw *FileWriter) WriteLog(context []byte) error {
 
 		// 压缩文件
 		if fw.needCompress {
-			err = CompressFileToTarGz(destPath)
+			err = compressFileToTarGz(destPath)
 			if err != nil {
 				return err
 			}
 			// 删除原文件
-			err = Remove(destPath)
+			err = remove(destPath)
 			if err != nil {
 				return err
 			}

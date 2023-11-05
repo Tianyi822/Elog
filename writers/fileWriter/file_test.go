@@ -22,7 +22,7 @@ func TestCreateFileOp(t *testing.T) {
 func TestIsExists(t *testing.T) {
 	path := "/Users/chentianyi/Program/Goland-workplace/easy-go-log/log/"
 
-	exist := IsExist(path)
+	exist := isExist(path)
 	if !exist {
 		t.Fatalf("路径不存在: %v", exist)
 	}
@@ -31,7 +31,7 @@ func TestIsExists(t *testing.T) {
 
 func TestFileOp_Write(t *testing.T) {
 	config := &FWConfig{
-		Path:         "E:\\MineProgram\\go-workplace\\easy-go-log\\log\\test.log",
+		Path:         "E:\\MineProgram\\go-workplace\\elog\\log\\test.log",
 		MaxSize:      1,
 		NeedCompress: true,
 	}

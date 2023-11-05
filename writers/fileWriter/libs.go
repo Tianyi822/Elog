@@ -9,22 +9,22 @@ import (
 	"strings"
 )
 
-// IsExist 判断路径是否存在
-func IsExist(path string) bool {
+// isExist 判断路径是否存在
+func isExist(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
 }
 
-// MustOpenFile 直接打开文件，使用该方法的前提是确定文件一定存在
-func MustOpenFile(realPath string) (*os.File, error) {
+// mustOpenFile 直接打开文件，使用该方法的前提是确定文件一定存在
+func mustOpenFile(realPath string) (*os.File, error) {
 	file, err := os.OpenFile(realPath, os.O_APPEND|os.O_RDWR, 0666)
 	return file, err
 }
 
-// CreateFile 创建文件，先检查文件是否存在，存在就报错，不存在就创建
-func CreateFile(path string) (*os.File, error) {
+// createFile 创建文件，先检查文件是否存在，存在就报错，不存在就创建
+func createFile(path string) (*os.File, error) {
 	dir := filepath.Dir(path)
-	exist := IsExist(dir)
+	exist := isExist(dir)
 	if !exist {
 		err := os.MkdirAll(dir, os.ModePerm)
 		if err != nil {
@@ -33,7 +33,7 @@ func CreateFile(path string) (*os.File, error) {
 	}
 
 	// 文件路径
-	exist = IsExist(path)
+	exist = isExist(path)
 	if !exist {
 		_, err := os.Create(path)
 		if err != nil {
@@ -49,13 +49,13 @@ func CreateFile(path string) (*os.File, error) {
 	return file, nil
 }
 
-// Remove 删除文件
-func Remove(path string) error {
+// remove 删除文件
+func remove(path string) error {
 	return os.RemoveAll(path)
 }
 
-// CompressFileToTarGz 将文件打包压缩成 .tar.gz 文件
-func CompressFileToTarGz(src string) error {
+// compressFileToTarGz 将文件打包压缩成 .tar.gz 文件
+func compressFileToTarGz(src string) error {
 	dir := filepath.Dir(src)
 	filePrefixName := strings.Split(filepath.Base(src), ".")[0]
 	dst := filepath.Join(dir, filePrefixName+".tar.gz")
