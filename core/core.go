@@ -10,16 +10,16 @@ import (
 // 这个组件中还要处理一些并发操作，防止出现日志并发写入的问题
 type Core struct {
 	// 日志内容
-	LogChannel chan []byte
+	logChannel chan []byte
 
 	// 日志写入对象（实现了 LogWriter 接口的实例）
 	// 因为会向控制台，文本文件，kafka 等组件写入，所以会针对不同的写入方式创建一个 writer，使用 map 进行管理
-	Writers map[string]elog.LogWriter
+	writers map[string]writers.LogWriter
 }
 
 // writeLog 用于写入日志
 func (c *Core) writeLog(content []byte) {
-	for _, writer := range c.Writers {
+	for _, writer := range c.writers {
 		err := writer.WriteLog(content)
 		if err != nil {
 			panic(err)
@@ -29,7 +29,7 @@ func (c *Core) writeLog(content []byte) {
 
 // closeWriters 用于关闭所有的写入器
 func (c *Core) closeWriters() {
-	for _, writer := range c.Writers {
+	for _, writer := range c.writers {
 		err := writer.Close()
 		if err != nil {
 			panic(err)
@@ -42,7 +42,7 @@ func (c *Core) Start() {
 	go func() {
 		for {
 			select {
-			case content, ok := <-c.LogChannel:
+			case content, ok := <-c.logChannel:
 				if ok {
 					c.writeLog(content)
 				} else {
@@ -57,12 +57,12 @@ func (c *Core) Start() {
 
 // Write 向日志核心写入日志
 func (c *Core) Write(content []byte) {
-	c.LogChannel <- content
+	c.logChannel <- content
 }
 
 // Close 关闭日志核心
 func (c *Core) Close() {
-	close(c.LogChannel)
+	close(c.logChannel)
 }
 
 // Config 链式配置 Core 工具
@@ -74,8 +74,8 @@ type Config struct {
 // NewCore 创建一个 Core 实例
 func NewCore() *Config {
 	core := &Core{
-		LogChannel: make(chan []byte, 256),
-		Writers:    nil,
+		logChannel: make(chan []byte, 256),
+		writers:    nil,
 	}
 
 	return &Config{
@@ -88,8 +88,8 @@ func NewCore() *Config {
 func NewCoreWithBuffer(buf int) *Config {
 	return &Config{
 		core: &Core{
-			LogChannel: make(chan []byte, buf),
-			Writers:    nil,
+			logChannel: make(chan []byte, buf),
+			writers:    nil,
 		},
 		isOk: false,
 	}
@@ -101,12 +101,12 @@ func (conf *Config) Create() *Core {
 	return conf.core
 }
 
-// checkWriters 用于检查 Writers 是否被初始化
-func (conf *Config) addWriter(writer elog.LogWriter) *Config {
-	if conf.core.Writers == nil {
-		conf.core.Writers = make(map[string]elog.LogWriter)
+// checkWriters 用于检查 writers 是否被初始化
+func (conf *Config) addWriter(writer writers.LogWriter) *Config {
+	if conf.core.writers == nil {
+		conf.core.writers = make(map[string]writers.LogWriter)
 	}
-	conf.core.Writers[writer.GetHash()] = writer
+	conf.core.writers[writer.GetHash()] = writer
 
 	return conf
 }
