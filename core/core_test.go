@@ -1,8 +1,8 @@
 package core
 
 import (
-	"easy-go-log/fileWriter"
 	"fmt"
+	"gitee.com/xxc_opensource/elog/fileWriter"
 	"testing"
 	"time"
 )

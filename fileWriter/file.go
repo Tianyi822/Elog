@@ -2,8 +2,8 @@ package fileWriter
 
 import (
 	"bufio"
-	easy_go_log "easy-go-log/uitls"
 	"fmt"
+	"gitee.com/xxc_opensource/elog/uitls"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -35,7 +35,7 @@ func CreateFileWriter(config *FWConfig) *FileWriter {
 	fileInfo := strings.Split(filepath.Base(config.Path), ".")
 
 	return &FileWriter{
-		hash:           easy_go_log.GenHash(config.Path),
+		hash:           uitls.GenHash(config.Path),
 		filePrefixName: fileInfo[0],
 		fileSuffixName: fileInfo[1],
 		path:           config.Path,
