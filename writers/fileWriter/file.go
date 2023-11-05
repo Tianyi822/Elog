@@ -110,7 +110,10 @@ func (fw *FileWriter) needSplit() bool {
 // 并不会出现多个协程往同一个文件里面写数据，文件操作模块主要集中于对日志文件的分片管理，对历史日志打包
 func (fw *FileWriter) WriteLog(context []byte) error {
 	if !fw.isOpen {
-		return fw.ready()
+		err := fw.ready()
+		if err != nil {
+			return err
+		}
 	}
 
 	// 判断是否需要进行分片

@@ -53,3 +53,17 @@ func TestFileOp_Write(t *testing.T) {
 		}
 	}
 }
+
+func TestFileOp_Write2(t *testing.T) {
+	config := &FWConfig{
+		Path:         "E:\\MineProgram\\go-workplace\\elog\\log\\test.log",
+		MaxSize:      1,
+		NeedCompress: true,
+	}
+
+	fo := CreateFileWriter(config)
+	err := fo.WriteLog([]byte("chentyit OHHHHHHHHH ttttt"))
+	if err != nil {
+		t.Fatalf("写入日志发生错误: %v", err)
+	}
+}
