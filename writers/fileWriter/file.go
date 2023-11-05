@@ -2,8 +2,8 @@ package fileWriter
 
 import (
 	"bufio"
-	easy_go_log "easy-go-log/uitls"
 	"fmt"
+	"gitee.com/xxc_opensource/elog/uitls"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -35,7 +35,7 @@ func CreateFileWriter(config *FWConfig) *FileWriter {
 	fileInfo := strings.Split(filepath.Base(config.Path), ".")
 
 	return &FileWriter{
-		hash:           easy_go_log.GenHash(config.Path),
+		hash:           uitls.GenHash(config.Path),
 		filePrefixName: fileInfo[0],
 		fileSuffixName: fileInfo[1],
 		path:           config.Path,
@@ -52,13 +52,13 @@ func (fw *FileWriter) GetHash() string {
 // ready 用于进行文件操作前的准备工作
 func (fw *FileWriter) ready() (err error) {
 	if fw.file == nil {
-		if IsExist(fw.path) {
-			fw.file, err = MustOpenFile(fw.path)
+		if isExist(fw.path) {
+			fw.file, err = mustOpenFile(fw.path)
 			if err != nil {
 				return err
 			}
 		} else {
-			fw.file, err = CreateFile(fw.path)
+			fw.file, err = createFile(fw.path)
 			if err != nil {
 				return err
 			}
@@ -110,7 +110,10 @@ func (fw *FileWriter) needSplit() bool {
 // 并不会出现多个协程往同一个文件里面写数据，文件操作模块主要集中于对日志文件的分片管理，对历史日志打包
 func (fw *FileWriter) WriteLog(context []byte) error {
 	if !fw.isOpen {
-		return fw.ready()
+		err := fw.ready()
+		if err != nil {
+			return err
+		}
 	}
 
 	// 判断是否需要进行分片
@@ -131,12 +134,12 @@ func (fw *FileWriter) WriteLog(context []byte) error {
 
 		// 压缩文件
 		if fw.needCompress {
-			err = CompressFileToTarGz(destPath)
+			err = compressFileToTarGz(destPath)
 			if err != nil {
 				return err
 			}
 			// 删除原文件
-			err = Remove(destPath)
+			err = remove(destPath)
 			if err != nil {
 				return err
 			}

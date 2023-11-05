@@ -1,8 +1,8 @@
 package consoleWriter
 
 import (
-	elog "easy-go-log/uitls"
 	"fmt"
+	"gitee.com/xxc_opensource/elog/uitls"
 )
 
 // ConsoleWriter 控制台输出，没必要做什么处理，简单实现 LogWriter 接口即可
@@ -10,7 +10,7 @@ type ConsoleWriter struct {
 }
 
 func (cs *ConsoleWriter) GetHash() string {
-	return elog.GenHash("ConsoleWriter")
+	return uitls.GenHash("ConsoleWriter")
 }
 
 func (cs *ConsoleWriter) Close() error {
