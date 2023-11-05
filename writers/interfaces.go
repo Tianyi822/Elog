@@ -1,4 +1,4 @@
-package logger
+package writers
 
 type LogWriter interface {
 	GetHash() string

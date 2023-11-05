@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	"gitee.com/xxc_opensource/elog/fileWriter"
+	"gitee.com/xxc_opensource/elog/writers/fileWriter"
 	"testing"
 	"time"
 )

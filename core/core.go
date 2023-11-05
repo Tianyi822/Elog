@@ -1,9 +1,9 @@
 package core
 
 import (
-	"gitee.com/xxc_opensource/elog"
-	"gitee.com/xxc_opensource/elog/consoleWriter"
-	"gitee.com/xxc_opensource/elog/fileWriter"
+	"gitee.com/xxc_opensource/elog/writers"
+	"gitee.com/xxc_opensource/elog/writers/consoleWriter"
+	"gitee.com/xxc_opensource/elog/writers/fileWriter"
 )
 
 // Core 日志核心组件，用于对接各种输出路径，包含但不限于日志文本文件，MQ 消息队列，Kafka 消息队列，HDFS 分布式集群等
