@@ -18,18 +18,9 @@ const (
 	Panic
 )
 
-type LogFormat byte
-
-const (
-	DefaultFormat LogFormat = 1 << iota
-	JSONFormat
-	CustomFormat
-)
-
 type Elog struct {
-	Level  LogLevel
-	Format LogFormat
-	core   *core.Core
+	Level LogLevel
+	core  *core.Core
 }
 
 // NewElog 创建一个日志组件
