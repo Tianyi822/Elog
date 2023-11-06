@@ -1,10 +1,5 @@
 package elog
 
-import (
-	"fmt"
-	"time"
-)
-
 // LogFormat 日志格式
 // TODO: 日志格式需要自定义几个关键字: time, level, track, msg
 // TODO: 通过解析关键字可以自定义日志格式，例如: [time] [level] [track] [msg]
@@ -18,7 +13,7 @@ type LogFormat struct {
 func DefaultLogFormat() *LogFormat {
 	return &LogFormat{
 		DateFormat:    "2006-01-02 15:04:05",
-		ContentFormat: "[%s] [%s] %s\n",
+		ContentFormat: "time level track msg",
 	}
 }
 
@@ -30,6 +25,12 @@ func CustomLogFormat(dateFormat string, msgFormat string) *LogFormat {
 	}
 }
 
-func (lf *LogFormat) Build(level LogLevel, logContent string) string {
-	return fmt.Sprintf(lf.ContentFormat, time.Now().Format(lf.DateFormat), level, logContent)
+// analyzeDateFormat 解析内容格式
+func (lf *LogFormat) analyzeContentFormat() string {
+	return ""
+}
+
+// genLog 构建日志内容
+func (lf *LogFormat) genLog(level LogLevel, logContent string) string {
+	return ""
 }
