@@ -3,20 +3,25 @@ package elog
 import (
 	"fmt"
 	"gitee.com/xxc_opensource/elog/core"
+	"gitee.com/xxc_opensource/elog/format"
 	"gitee.com/xxc_opensource/elog/writers/fileWriter"
 	"testing"
 	"time"
 )
 
 func TestElog(t *testing.T) {
+	// 配置 Core
 	fConf := &fileWriter.FWConfig{
 		NeedCompress: true,
 		MaxSize:      1,
-		Path:         "E:\\MineProgram\\go-workplace\\elog\\log\\test.log",
+		Path:         "/Users/chentianyi/Program/Goland-workplace/elog/log/test.log",
 	}
-
 	c := core.NewCore().AddFileWriter(fConf).AddConsoleWriter().Create()
-	elog := NewElog(Panic, c)
+
+	// 配置 Format
+	f := format.NewStrFormat()
+
+	elog := NewElog(Debug, f, c)
 
 	for i := 0; i < 10000; i++ {
 		elog.Debug(fmt.Sprintf("DEBUG test %d", i))
