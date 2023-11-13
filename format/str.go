@@ -18,7 +18,7 @@ type StrFormat struct {
 func NewStrFormat() *StrFormat {
 	return &StrFormat{
 		DateFormat:    "2006-01-02 15:04:05",
-		ContentFormat: "time level trace msg",
+		ContentFormat: "time\tlevel\ttrace\tmsg",
 	}
 }
 
