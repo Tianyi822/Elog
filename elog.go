@@ -5,8 +5,6 @@ import (
 	"gitee.com/xxc_opensource/elog/core"
 )
 
-// TODO: 需要自定义日期格式，日志级别，输出格式(Str||JsonStr||CustomFormatStr)
-
 type LogLevel byte
 
 const (
