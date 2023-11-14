@@ -1,6 +1,9 @@
 package esWriter
 
-import "github.com/elastic/go-elasticsearch/v7"
+import (
+	"gitee.com/xxc_opensource/elog/utils"
+	"github.com/elastic/go-elasticsearch/v7"
+)
 
 type EsV7Writer struct {
 	esClient *elasticsearch.Client
@@ -37,7 +40,7 @@ func CreateEsV7WriterWithConfig(config *V7Config, index string) *EsV7Writer {
 }
 
 func (ew *EsV7Writer) GetHash() string {
-	return ""
+	return utils.GenHash(ew.index)
 }
 
 func (ew *EsV7Writer) ready() error {
