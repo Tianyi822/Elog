@@ -66,10 +66,7 @@ func (ew *EsV7Writer) ready() (err error) {
 		return err
 	}
 	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			return
-		}
+		_ = Body.Close()
 	}(res.Body)
 
 	if res.IsError() {
