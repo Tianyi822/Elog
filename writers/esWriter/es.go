@@ -12,14 +12,14 @@ import (
 
 type EsV7Writer struct {
 	esClient *es7.Client
-	index    string
+	index    *IndexConfig
 	isReady  bool
 }
 
 var createEs7ClientOnce sync.Once
 
 // CreateEsV7WriterByConfig 通过配置项创建一个 v7 版本的 elasticsearch 客户端，并通过这个客户端写入日志
-func CreateEsV7WriterByConfig(config es7.Config, index string) *EsV7Writer {
+func CreateEsV7WriterByConfig(config es7.Config, index *IndexConfig) *EsV7Writer {
 	writer := &EsV7Writer{
 		index:   index,
 		isReady: false,
@@ -40,7 +40,7 @@ func CreateEsV7WriterByConfig(config es7.Config, index string) *EsV7Writer {
 }
 
 // CreateEsV7WriterByClient 通过一个 v7 版本的 elasticsearch 客户端写入日志
-func CreateEsV7WriterByClient(client *es7.Client, index string) *EsV7Writer {
+func CreateEsV7WriterByClient(client *es7.Client, index *IndexConfig) *EsV7Writer {
 	return &EsV7Writer{
 		index:    index,
 		esClient: client,
@@ -49,7 +49,7 @@ func CreateEsV7WriterByClient(client *es7.Client, index string) *EsV7Writer {
 }
 
 func (ew *EsV7Writer) GetHash() string {
-	return utils.GenHash(ew.index)
+	return utils.GenHash(ew.index.Name)
 }
 
 // ready 因为创建了 EsWriter 后，并不会直接进行操作
@@ -57,7 +57,7 @@ func (ew *EsV7Writer) GetHash() string {
 // EsWriter 的 ready 函数会先检查一下 ES 中是否确实存在指定的 index，不存在则创建
 func (ew *EsV7Writer) ready() (err error) {
 	req := esapi.IndicesExistsAliasRequest{
-		Index: []string{ew.index},
+		Index: []string{ew.index.Name},
 	}
 
 	// TODO: 目前没有使用 context 对整个日志框架进行控制，所以这里的第一个参数先传入一个 nil
