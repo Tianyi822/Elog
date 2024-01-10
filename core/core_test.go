@@ -30,7 +30,7 @@ func TestCore_Write(t *testing.T) {
 	core.Start()
 
 	for i := 0; i < 10000; i++ {
-		core.Write([]byte(fmt.Sprintf("test %d", i)))
+		core.Write(fmt.Sprintf("test %d", i))
 	}
 	time.Sleep(2 * time.Second)
 

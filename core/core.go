@@ -56,8 +56,8 @@ func (c *Core) Start() {
 }
 
 // Write 向日志核心写入日志
-func (c *Core) Write(content []byte) {
-	c.logChannel <- content
+func (c *Core) Write(content string) {
+	c.logChannel <- []byte(content)
 }
 
 // Close 关闭日志核心

@@ -1,8 +1,9 @@
-package uitls
+package utils
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"time"
 )
 
 func GenHash(str string) string {
@@ -19,4 +20,14 @@ func GenHash(str string) string {
 	hashStr := hex.EncodeToString(hashBytes)
 
 	return hashStr
+}
+
+// DefaultTimeFormat 默认时间格式
+func DefaultTimeFormat(t time.Time) string {
+	return t.Format("2006-01-02 15:04:05")
+}
+
+// CustomTimeFormat 自定义时间格式
+func CustomTimeFormat(t time.Time, format string) string {
+	return t.Format(format)
 }

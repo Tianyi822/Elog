@@ -3,7 +3,7 @@ package fileWriter
 import (
 	"bufio"
 	"fmt"
-	"gitee.com/xxc_opensource/elog/uitls"
+	"gitee.com/xxc_opensource/elog/utils"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -35,7 +35,7 @@ func CreateFileWriter(config *FWConfig) *FileWriter {
 	fileInfo := strings.Split(filepath.Base(config.Path), ".")
 
 	return &FileWriter{
-		hash:           uitls.GenHash(config.Path),
+		hash:           utils.GenHash(config.Path),
 		filePrefixName: fileInfo[0],
 		fileSuffixName: fileInfo[1],
 		path:           config.Path,
